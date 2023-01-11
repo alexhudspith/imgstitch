@@ -1,0 +1,7 @@
+name: imgstitch
+dependencies:
+  - python >= 3.10
+  - pytest >= 7
+  - pillow >= 9.3.0
+  - numpy >= 1.23.5
+  - scipy >= 1.9.3
