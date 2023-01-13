@@ -105,7 +105,8 @@ def _plot(a, b):
     matplotlib.use('Qt5Agg')
     import matplotlib.pyplot as plt
     fig, ax, = plt.subplots(1, 2, sharex=True)
-    mn = min(a.min(), b.min()); mx = max(a.max(), b.max())
+    mn = min(a.min(), b.min())
+    mx = max(a.max(), b.max())
     ax[0].imshow(a, vmin=mn, vmax=mx)
     ax[1].imshow(b, vmin=mn, vmax=mx)
     plt.show()
@@ -173,7 +174,7 @@ def _open_images(paths: list[_PathLike]) -> list[Image]:
 
 def _save_image(im: Image, output_path: _PathLike | None) -> None:
     if output_path is not None:
-        logger.info(f'Writing %s', output_path)
+        logger.info('Writing %s', output_path)
         im.save(output_path)
     else:
         im.save(sys.stdout.buffer, 'png')
