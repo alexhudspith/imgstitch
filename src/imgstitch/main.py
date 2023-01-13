@@ -124,7 +124,7 @@ def _find_break_row(a, b, overlap, try_best_n=4) -> int | None:
         a_row = c - len(b_overlap) + 1 + a_offset
         b_row = a.shape[0] - a_row
         logger.debug('- best #%d, a_row = %d, b_row = %d, correlation MSE: %f', i, a_row, b_row, corr_mse[c])
-        if a_row >= 0 and b_row < b.shape[0] and np.isclose(a[a_row:], b[:b_row]).all():
+        if a_row >= 0 and b_row < b.shape[0] and np.allclose(a[a_row:], b[:b_row]):
             break
     else:
         a_row = None
