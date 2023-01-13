@@ -1,6 +1,6 @@
 # imgstitch
 
-[![Tests](https://github.com/alexhudspith/imgstitch/actions/workflows/test.yml/badge.svg)](https://github.com/alexhudspith/imgstitch/actions/workflows/test.yml)
+[![Tests](https://github.com/alexhudspith/imgstitch/actions/workflows/tests.yml/badge.svg)](https://github.com/alexhudspith/imgstitch/actions/workflows/tests.yml)
 
 ## Description
 

@@ -39,7 +39,9 @@ classifiers = [
 dev = [
     "flake8>=4",
     "pytest>=7",
-    "pytest-cov>=3"
+    "pytest-cov>=3",
+    "coverage[toml]",
+    "tox>=4.2.8"
 ]
 
 
@@ -60,8 +62,12 @@ version = {attr = "imgstitch.__version__"}
 [tool.pytest.ini_options]
 pythonpath = "src"
 testpaths = ["tests"]
-addopts = "--import-mode=importlib --capture=tee-sys --cov --cov-report html"
+addopts = "--import-mode=importlib --capture=tee-sys --cov"
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
 log_level = "WARNING"
-log_cli = true
+
+
+[tool.coverage.run]
+parallel = true
+branch = true
