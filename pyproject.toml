@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "imgstitch"
+dynamic = ["version"]
+description = "Automatic image alignment and stitching tool"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "Alex Hudspith", email = "alexhudspith@users.noreply.github.com" }
+]
+
+dependencies = [
+    "pillow>=9.3.0",
+    "numpy>=1.23.5",
+    "scipy>=1.9.3",
+]
+
+# See https://pypi.org/classifiers/
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Environment :: Console',
+    'Intended Audience :: End Users/Desktop',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Topic :: Multimedia :: Graphics',
+    'License :: OSI Approved :: MIT License'
+]
+
+
+[project.optional-dependencies]
+dev = [
+    "flake8>=4",
+    "pytest>=7",
+    "pytest-cov>=3"
+]
+
+
+[project.scripts]
+imgstitch = "imgstitch.main:main"
+
+
+[project.urls]
+"Homepage" = "https://github.com/alexhudspith/imgstitch"
+"Bug Reports" = "https://github.com/alexhudspith/imgstitch/issues"
+"Source" = "https://github.com/alexhudspith/imgstitch"
+
+
+[tool.setuptools.dynamic]
+version = {attr = "imgstitch.__version__"}
+
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+testpaths = ["tests"]
+addopts = "--import-mode=importlib --capture=tee-sys --cov --cov-report html"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_level = "WARNING"
+log_cli = true
