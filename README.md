@@ -1,5 +1,7 @@
 # imgstitch
 
+[![Tests](https://github.com/alexhudspith/imgstitch/actions/workflows/test.yml/badge.svg)](https://github.com/alexhudspith/imgstitch/actions/workflows/test.yml)
+
 ## Description
 
 An automatic image alignment and stitching tool for images that overlap vertically. Its main purpose is to
