@@ -1,3 +1,5 @@
 pillow>=9.3.0
 numpy>=1.23.5
 scipy>=1.9.3
+pytest>=7
+pytest-cov>=3
