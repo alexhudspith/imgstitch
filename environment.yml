@@ -13,5 +13,5 @@ dependencies:
 # For dev/testing
   - pytest >= 7
   - pytest-cov >= 3
+  - coverage[toml]
   - flake8 >= 4
-  - tox >= 4.2.8

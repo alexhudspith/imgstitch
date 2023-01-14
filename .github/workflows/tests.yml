@@ -10,6 +10,7 @@ permissions:
   contents: read
 
 jobs:
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -39,6 +40,7 @@ jobs:
           path: .coverage.*
           retention-days: 1
           if-no-files-found: error
+
   coverage:
     needs: test
     runs-on: ubuntu-latest
@@ -53,12 +55,20 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install 'tox>=4,<5' 'tox-gh-actions>=3,<4'
+          pip install 'tox ~= 4.0' 'tox-gh-actions ~= 3.0'
 
       - name: Download coverage
         uses: actions/download-artifact@v3
         with:
           name: coverage
 
-      - name: Create coverage report using tox
-        run: tox -e covreport
+      - name: Create HTML coverage report using tox
+        run: tox -e cov_report
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: htmlcov
+          path: htmlcov/
+          retention-days: 90
+          if-no-files-found: error
