@@ -39,16 +39,16 @@ classifiers = [
 dev = [
     "pytest >= 7",
     "pytest-cov >= 3",
-    "coverage[toml]",
+    "coverage[toml] >= 7",
     "flake8 >= 4",
-    "tox ~= 4.0"
+    "tox ~= 4.0",
 ]
 
 # Dependencies used by tox tests, excluding tox itself
 tox = [
     "pytest >= 7",
     "pytest-cov >= 3",
-    "coverage[toml]",
+    "coverage[toml] >= 7",
 ]
 
 

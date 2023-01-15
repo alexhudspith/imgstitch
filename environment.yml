@@ -13,5 +13,5 @@ dependencies:
 # For dev/testing
   - pytest >= 7
   - pytest-cov >= 3
-  - coverage[toml]
+  - coverage[toml] >= 7
   - flake8 >= 4
