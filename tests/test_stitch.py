@@ -100,7 +100,7 @@ def _debug_save(debug_dir_path, /, **images):
 
 
 @pytest.mark.parametrize(argnames=_ARG_NAMES, argvalues=_ARG_VALUES, ids=_IDS)
-def test(image_name, width, height, crop_y_1, crop_y_2, debug_dir_path, request):
+def test_stitch(image_name, width, height, crop_y_1, crop_y_2, debug_dir_path, request):
     """Create two overlapping crops of an image (width x height) and test that stitching them restores the original."""
 
     # Retrieve an image of size (width x height) from the named pytest fixture
