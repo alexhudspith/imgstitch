@@ -45,7 +45,7 @@ jobs:
           pip install 'tox>=4,<5' 'tox-gh-actions>=3,<4'
 
       - name: Test using tox
-        run: tox
+        run: tox -vv
 
       - name: Upload coverage
         uses: actions/upload-artifact@v3
@@ -65,7 +65,7 @@ jobs:
         id: python
         run: echo "version=3.10" >> $GITHUB_OUTPUT
 
-      - name: Set up Python 3.10
+      - name: Set up Python ${{ steps.python.outputs.version }}
         uses: actions/setup-python@v4
         id: py
         with:
@@ -96,7 +96,7 @@ jobs:
           name: coverage
 
       - name: Create flake8 & HTML coverage report using tox
-        run: tox -e reports
+        run: tox -vv -e reports
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v3
