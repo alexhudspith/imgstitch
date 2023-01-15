@@ -25,6 +25,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+
+      - name: pip cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-py${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-py${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -47,10 +61,29 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set Python version
+        id: python
+        run: echo "version=3.10" >> $GITHUB_OUTPUT
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
+        id: py
         with:
-          python-version: '3.10'
+          python-version: ${{ steps.python.outputs.version }}
+
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+
+      - name: pip cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-py${{ steps.python.outputs.version }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-py$${{ steps.python.outputs.version }}-
+            ${{ runner.os }}-pip-py
 
       - name: Install dependencies
         run: |
