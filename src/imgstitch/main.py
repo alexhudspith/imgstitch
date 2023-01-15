@@ -5,25 +5,35 @@ import logging
 import sys
 import time
 from collections import defaultdict
+from collections.abc import Iterable
 from os import PathLike
 from pathlib import Path
 
 import numpy as np
 from scipy import signal, linalg
-from PIL import Image, ImageOps
+
+import PIL.Image
+import PIL.ImageOps
+from PIL.Image import Image
 
 from imgstitch import __version__
 
 
-_PathLike = str | PathLike
+_PathLike = str | PathLike[str]
 
 logger = logging.getLogger(__name__)
 
 
 class ImgStitchError(RuntimeError):
-    def __init__(self, message=None, exit_code=2):
-        super().__init__(message)
+    def __init__(self, message: str | None = None, exit_code: int = 2):
+        args = () if message is None else (message,)
+        super().__init__(*args)
         self.exit_code = exit_code
+
+
+def _image_name(image: Image, counter: int) -> str:
+    filename = image.filename if hasattr(image, 'filename') else None
+    return filename or f'Image #{counter}'
 
 
 def stitch(*images: Image, crop_header_height: int = 0, crop_first: bool = True) -> Image:
@@ -41,9 +51,10 @@ def stitch(*images: Image, crop_header_height: int = 0, crop_first: bool = True)
     if crop_header_height and crop_first:
         img_a = img_a.crop((0, crop_header_height) + img_a.size)
 
-    for img_b in img_iter:
+    for counter, img_b in enumerate(img_iter, 2):
         if img_a.mode != img_b.mode:
-            logger.warning(f'Converting from {img_b.mode} to {img_a.mode}: {img_b.filename}')
+            name = _image_name(img_b, counter)
+            logger.warning(f'Converting from {img_b.mode} to {img_a.mode}: {name}')
             img_b = img_b.convert(img_a.mode)
 
         if crop_header_height:
@@ -78,7 +89,7 @@ def _stitch_two(img_a: Image, img_b: Image) -> Image:
         raise ImgStitchError('No vertical overlap found between images')
 
     ab_size = img_a.width, a_row + img_b.height
-    out = ImageOps.pad(img_a, ab_size, centering=(0, 0))
+    out = PIL.ImageOps.pad(img_a, ab_size, centering=(0, 0))
     out.paste(img_b, (0, a_row))
 
     t1 = time.perf_counter_ns()
@@ -87,16 +98,16 @@ def _stitch_two(img_a: Image, img_b: Image) -> Image:
     return out
 
 
-def _check_images_compatible(images) -> None:
+def _check_images_compatible(images: Iterable[Image]) -> None:
     images_by_width = defaultdict(list)
     for image in images:
         images_by_width[image.width].append(image)
 
     if len(images_by_width) != 1:
-        for width, image_list in images_by_width.items():
+        for counter, (width, image_list) in enumerate(images_by_width.items(), 1):
             logger.error(f'({width} x _):')
             for image in image_list:
-                logger.error(f'  {image.filename}')
+                logger.error(f'  {_image_name(image, counter)}')
         raise ImgStitchError(f'Images have different widths: {sorted(images_by_width.keys())}')
 
 
@@ -112,7 +123,7 @@ def _plot(a, b):
     plt.show()
 
 
-def _find_break_row(a, b, overlap, try_best_n=4) -> int | None:
+def _find_break_row(a: np.ndarray, b: np.ndarray, overlap: int, try_best_n: int = 4) -> int | None:
     a_offset = len(a) - overlap
     a_overlap = a[-overlap:]
     b_overlap = b[:overlap]
@@ -131,35 +142,35 @@ def _find_break_row(a, b, overlap, try_best_n=4) -> int | None:
     return a_row
 
 
-def _normalize(a: np.array, b: np.array, axis: int = 0) -> None:
+def _normalize(a: np.ndarray, b: np.ndarray, axis: int = 0) -> None:
     a_means = a.mean(axis=axis)
     a -= a_means
     b -= a_means
 
 
 def _norm_cross_correlation(a: np.ndarray, b: np.ndarray, axis: int = 0) -> np.ndarray:
-    c = signal.fftconvolve(a, b[::-1], mode='full', axes=axis)
+    c: np.ndarray = signal.fftconvolve(a, b[::-1], mode='full', axes=axis)
     norm = linalg.norm(a, axis=axis) * linalg.norm(b, axis=axis)
     norm[np.isclose(norm, 0)] = 1
     c /= norm
     return c
 
 
-def _image_to_array(im: Image) -> np.ndarray:
-    a = np.array(im, dtype=np.float64, order='C')
+def _image_to_array(image: Image) -> np.ndarray:
+    a = np.array(image, dtype=np.float64, order='C')
     if a.ndim > 2:
         n = a.shape[2]
         a = np.hstack([a[:, :, i] for i in range(min(n, 3))])
     return a
 
 
-def _open_images(paths: list[_PathLike]) -> list[Image]:
+def _open_images(paths: Iterable[_PathLike]) -> list[Image]:
     images = []
     ok = False
     try:
         for path in paths:
             logger.info('Reading %s', path)
-            image = Image.open(path)
+            image = PIL.Image.open(Path(path))
             images.append(image)
             if image.width * image.height == 0:
                 raise ImgStitchError(f'Empty image {image.size}: {path}')
@@ -172,19 +183,19 @@ def _open_images(paths: list[_PathLike]) -> list[Image]:
                 image.close()
 
 
-def _save_image(im: Image, output_path: _PathLike | None) -> None:
+def _save_image(image: Image, output_path: _PathLike | None) -> None:
     if output_path is not None:
         logger.info('Writing %s', output_path)
-        im.save(output_path)
+        image.save(Path(output_path))
     else:
-        im.save(sys.stdout.buffer, 'png')
+        image.save(sys.stdout.buffer, 'png')
 
 
 def _path_or_stdout_arg(s: str) -> Path | None:
     return None if s == '-' else Path(s)
 
 
-def _parse_args():
+def _parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(fromfile_prefix_chars='@', add_help=False)
     ap.add_argument('images', metavar='IMAGE', nargs=2, type=Path, help=argparse.SUPPRESS)
     ap.add_argument('images2', metavar='IMAGE', nargs='*', type=Path, help='Two or more image files, top to bottom')
@@ -204,7 +215,7 @@ def _parse_args():
     return args
 
 
-def main():
+def main() -> None:
     args = _parse_args()
 
     log_levels = [logging.WARNING, logging.INFO, logging.DEBUG]

@@ -42,6 +42,7 @@ dev = [
     "coverage[toml] >= 7",
     "flake8 >= 4",
     "tox ~= 4.0",
+    "mypy[reports] >= 0.991",
 ]
 
 # Dependencies used by tox tests, excluding tox itself
@@ -49,6 +50,7 @@ tox = [
     "pytest >= 7",
     "pytest-cov >= 3",
     "coverage[toml] >= 7",
+    "mypy[reports] >= 0.991"
 ]
 
 
@@ -78,3 +80,21 @@ log_level = "WARNING"
 [tool.coverage.run]
 parallel = true
 branch = true
+
+
+[tool.mypy]
+mypy_path = "src"
+packages = "imgstitch"
+install_types = true
+non_interactive = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "scipy",
+    "matplotlib.*"
+]
+ignore_missing_imports = true

@@ -41,7 +41,7 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  coverage:
+  reports:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -57,13 +57,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install 'tox ~= 4.0' 'tox-gh-actions ~= 3.0'
 
-      - name: Download coverage
+      - name: Download .coverage data from tests
         uses: actions/download-artifact@v3
         with:
           name: coverage
 
-      - name: Create HTML coverage report using tox
-        run: tox -e cov_report
+      - name: Create flake8 & HTML coverage report using tox
+        run: tox -e reports
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v3
