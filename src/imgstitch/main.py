@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 
 
 class ImgStitchError(RuntimeError):
+    """Exception raised when stitching could not be completed."""
+
     def __init__(self, message: str | None = None, exit_code: int = 2):
         args = () if message is None else (message,)
         super().__init__(*args)
@@ -32,11 +34,28 @@ class ImgStitchError(RuntimeError):
 
 
 def _image_name(image: Image, counter: int) -> str:
+    r"""
+    Return the image filename if available, otherwise 'Image #\ *counter*'.
+
+    :param image: the image to name
+    :param counter: integer suffix to use when no filename is available
+    :return: the name
+    """
     filename = image.filename if hasattr(image, 'filename') else None
     return filename or f'Image #{counter}'
 
 
 def stitch(*images: Image, crop_header_height: int = 0, crop_first: bool = True) -> Image:
+    """
+    Stitch two or more overlapping images given in top-to-bottom order.
+
+    :param images: vertically overlapping images to stitch together
+    :param crop_header_height: rows to crop from top of each image
+    :param crop_first: whether to crop the first image
+    :return: the stitched image
+    :raises ImgStitchError: if the images are not all of equal width,
+        or if no overlap could be found
+    """
     if len(images) < 2:
         raise ValueError(f'At least 2 image paths are required, got {len(images)}')
 
@@ -124,6 +143,15 @@ def _plot(a, b):
 
 
 def _find_break_row(a: np.ndarray, b: np.ndarray, overlap: int, try_best_n: int = 4) -> int | None:
+    """
+    Find the earliest row of ``a`` at which ``b`` starts overlapping.
+
+    :param a: top 2D array
+    :param b: bottom 2D array
+    :param overlap: maximum number of overlap rows to consider
+    :param try_best_n: number of highest ranked correlations to try
+    :return: first row index of ``a`` where all remaining rows match ``b``
+    """
     a_offset = len(a) - overlap
     a_overlap = a[-overlap:]
     b_overlap = b[:overlap]
@@ -143,12 +171,14 @@ def _find_break_row(a: np.ndarray, b: np.ndarray, overlap: int, try_best_n: int 
 
 
 def _normalize(a: np.ndarray, b: np.ndarray, axis: int = 0) -> None:
+    """Remove offset/bias from arrays."""
     a_means = a.mean(axis=axis)
     a -= a_means
     b -= a_means
 
 
 def _norm_cross_correlation(a: np.ndarray, b: np.ndarray, axis: int = 0) -> np.ndarray:
+    """Compute the normalized cross-correlation along one axis."""
     c: np.ndarray = signal.fftconvolve(a, b[::-1], mode='full', axes=axis)
     norm = linalg.norm(a, axis=axis) * linalg.norm(b, axis=axis)
     norm[np.isclose(norm, 0)] = 1
@@ -157,6 +187,7 @@ def _norm_cross_correlation(a: np.ndarray, b: np.ndarray, axis: int = 0) -> np.n
 
 
 def _image_to_array(image: Image) -> np.ndarray:
+    """Return the given PIL image as a NumPy 2D float array."""
     a = np.array(image, dtype=np.float64, order='C')
     if a.ndim > 2:
         n = a.shape[2]

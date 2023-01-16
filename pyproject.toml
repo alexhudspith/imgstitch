@@ -41,6 +41,7 @@ dev = [
     "pytest-cov >= 3",
     "coverage[toml] >= 7",
     "flake8 >= 4",
+    "flake8-docstrings >= 1",
     "tox ~= 4.0",
     "mypy[reports] >= 0.991",
     "types-Pillow"

@@ -79,7 +79,7 @@ def amsterdam(amsterdam_image, width, height):
 
 @pytest.fixture
 def debug_dir_path(request, tmp_path_factory):
-    """If debugging, yield a new directory for the current test, formed from the test name."""
+    """If debugging, yield a new directory for the current test."""
     if _DEBUG:
         # "test[noise, w=5, h=5, y1=3, y2=1]" -> "test-noise_w5_h5_y13_y21-"
         dir_name = request.node.name
@@ -93,7 +93,7 @@ def debug_dir_path(request, tmp_path_factory):
 
 
 def _debug_save(debug_dir_path, /, **images):
-    """If debugging, save all the given images under debug_dir_path."""
+    """If debugging, save all the given images under ``debug_dir_path``."""
     if _DEBUG:
         for name, img in images.items():
             img.save(debug_dir_path / f'{name}.png')
@@ -101,8 +101,7 @@ def _debug_save(debug_dir_path, /, **images):
 
 @pytest.mark.parametrize(argnames=_ARG_NAMES, argvalues=_ARG_VALUES, ids=_IDS)
 def test_stitch(image_name, width, height, crop_y_1, crop_y_2, debug_dir_path, request):
-    """Create two overlapping crops of an image (width x height) and test that stitching them restores the original."""
-
+    """Create two overlapping crops of an image and test stitching them."""
     # Retrieve an image of size (width x height) from the named pytest fixture
     expected = request.getfixturevalue(image_name)
     if isinstance(expected, Iterator):
