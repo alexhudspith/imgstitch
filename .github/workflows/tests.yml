@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install 'tox>=4,<5' 'tox-gh-actions>=3,<4'
+          pip install 'tox ~= 4.0' 'tox-gh-actions ~= 3.0'
 
       - name: Test using tox
         run: tox -vv
@@ -67,7 +67,6 @@ jobs:
 
       - name: Set up Python ${{ steps.python.outputs.version }}
         uses: actions/setup-python@v4
-        id: py
         with:
           python-version: ${{ steps.python.outputs.version }}
 
