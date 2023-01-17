@@ -72,6 +72,7 @@ version = {attr = "imgstitch.__version__"}
 
 
 [tool.pytest.ini_options]
+# https://docs.pytest.org/en/latest/
 pythonpath = "src"
 testpaths = ["tests"]
 addopts = "--import-mode=importlib --capture=tee-sys --cov"
@@ -81,11 +82,15 @@ log_level = "WARNING"
 
 
 [tool.coverage.run]
+# https://coverage.readthedocs.io/en/latest/
+# Append machine, PID & random number to .coverage data file name
 parallel = true
+# Measure branch coverage (e.g. if/else branches taken)
 branch = true
 
 
 [tool.mypy]
+# https://mypy.readthedocs.io/en/latest/
 mypy_path = "src"
 packages = "imgstitch"
 install_types = true
@@ -96,6 +101,7 @@ warn_unused_ignores = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
+# No typing information or type stubs available
 module = [
     "scipy",
     "matplotlib.*"
