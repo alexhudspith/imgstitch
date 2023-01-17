@@ -10,16 +10,18 @@ def test_stitch_zero():
 
 
 def test_stitch_one():
+    image1 = Image.new('L', (1, 1))
     with pytest.raises(ValueError):
-        stitch(None)
+        stitch(image1)
 
 
 def test_stitch_crop_header_zero():
+    image1 = Image.new('L', (1, 1))
     with pytest.raises(ValueError):
-        stitch(None, None, crop_header_height=-1)
+        stitch(image1, image1, crop_header_height=-1)
 
 
-def test_width():
+def test_incompatible_width():
     image1 = Image.new('L', (256, 128))
     image2 = Image.new('L', (128, 128))
     with pytest.raises(ImgStitchError):

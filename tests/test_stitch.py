@@ -10,25 +10,19 @@ from imgstitch.main import stitch
 # Set up test arguments
 _IMAGE_FIXTURES = ('bird', 'amsterdam', 'mandelbrot', 'noise')
 _PX = (5, 12, 100, 1000)
-_ARG_NAMES = ('image_name', 'width', 'height', 'crop_y_1', 'crop_y_2')
+_ARG_NAMES = ('image_name', 'width', 'height', 'crop_ya', 'crop_yb')
 _ARG_VALUES = sorted({
-    (image, width, height, crop_y_1, crop_y_2)
+    (image, width, height, crop_ya, crop_yb)
     for image in _IMAGE_FIXTURES
     for width in _PX
     for height in _PX
-    for crop_y_1 in (1, 2, height // 4, height // 2, 3 * height // 4, height - 1, height - 2)
-    for crop_y_2 in (1, 2, height // 4, height // 2, 3 * height // 4, height - 1, height - 2)
-    if crop_y_2 < crop_y_1
+    for crop_ya in (1, 2, height // 4, height // 2, 3 * height // 4, height - 1, height - 2)
+    for crop_yb in (1, 2, height // 4, height // 2, 3 * height // 4, height - 1, height - 2)
+    if crop_yb < crop_ya
 })
-_IDS = [f'{i}, w={w}, h={h}, y1={y1}, y2={y2}' for i, w, h, y1, y2 in _ARG_VALUES]
+_IDS = [f'{i}, w={w}, h={h}, ya={ya}, yb={yb}' for i, w, h, ya, yb in _ARG_VALUES]
 
 _DEBUG = False
-
-
-def reseed_libc():
-    from ctypes import CDLL
-    libc = CDLL("libc.so.6")
-    libc.srand(12345)
 
 
 def resize(image, width, height):
@@ -37,20 +31,14 @@ def resize(image, width, height):
     if height is None:
         height = image.height
     size = (width, height)
-    yield image if image.size == size else image.resize(size)
+    return image if image.size == size else image.resize(size)
 
 
-@pytest.fixture
-def mandelbrot(width, height):
-    img = Image.effect_mandelbrot((width, height), (-1.5, -1, 0.5, 1), 100)
-    yield img
-
-
-@pytest.fixture
-def noise(width, height):
-    reseed_libc()
-    img = Image.effect_noise((width, height), 200)
-    yield img
+@pytest.fixture(scope='module')
+def noise_image():
+    # Module scope so only loaded once, if needed
+    filename = 'noise_1000x1000_sigma200.png'
+    yield Image.open(Path(__file__).parent / 'images' / filename)
 
 
 @pytest.fixture(scope='module')
@@ -78,10 +66,22 @@ def amsterdam(amsterdam_image, width, height):
 
 
 @pytest.fixture
+def mandelbrot(width, height):
+    img = Image.effect_mandelbrot((width, height), (-1.5, -1, 0.5, 1), 100)
+    yield img
+
+
+@pytest.fixture
+def noise(noise_image, width, height):
+    img = noise_image.crop((0, 0, width, height))
+    yield img
+
+
+@pytest.fixture
 def debug_dir_path(request, tmp_path_factory):
     """If debugging, yield a new directory for the current test."""
     if _DEBUG:
-        # "test[noise, w=5, h=5, y1=3, y2=1]" -> "test-noise_w5_h5_y13_y21-"
+        # "test[noise, w=5, h=5, ya=3, yb=1]" -> "test-noise_w5_h5_ya3_yb1-"
         dir_name = request.node.name
         dir_name = re.sub(r'[\[\]]', '-', dir_name)
         dir_name = re.sub(r'[=,]', '', dir_name)
@@ -100,7 +100,7 @@ def _debug_save(debug_dir_path, /, **images):
 
 
 @pytest.mark.parametrize(argnames=_ARG_NAMES, argvalues=_ARG_VALUES, ids=_IDS)
-def test_stitch(image_name, width, height, crop_y_1, crop_y_2, debug_dir_path, request):
+def test_stitch(image_name, width, height, crop_ya, crop_yb, debug_dir_path, request):
     """Create two overlapping crops of an image and test stitching them."""
     # Retrieve an image of size (width x height) from the named pytest fixture
     expected = request.getfixturevalue(image_name)
@@ -108,8 +108,8 @@ def test_stitch(image_name, width, height, crop_y_1, crop_y_2, debug_dir_path, r
         expected = next(expected)
 
     # Create two crops
-    img1 = expected.crop((0, 0, width, crop_y_1))
-    img2 = expected.crop((0, crop_y_2, width, height))
+    img1 = expected.crop((0, 0, width, crop_ya))
+    img2 = expected.crop((0, crop_yb, width, height))
     _debug_save(debug_dir_path, expected=expected, img1=img1, img2=img2)
 
     # Stitch the crops
