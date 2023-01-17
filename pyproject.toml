@@ -83,10 +83,11 @@ log_level = "WARNING"
 
 [tool.coverage.run]
 # https://coverage.readthedocs.io/en/latest/
-# Append machine, PID & random number to .coverage data file name
-parallel = true
+# Note: Install tomli or use Python 3.11 for this TOML config to be used
 # Measure branch coverage (e.g. if/else branches taken)
 branch = true
+# Store relative file paths in the data file
+relative_files = true
 
 
 [tool.mypy]

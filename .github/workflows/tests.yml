@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, macos-latest ]
         python-version: [ '3.10', '3.11' ]
     steps:
       - uses: actions/checkout@v3
@@ -45,7 +45,8 @@ jobs:
           pip install 'tox ~= 4.0' 'tox-gh-actions ~= 3.0'
 
       - name: Test using tox
-        run: tox -vv
+        # Add OS suffix to coverage files
+        run: tox -vv -- .${{ matrix.os }}
 
       - name: Upload coverage
         uses: actions/upload-artifact@v3
