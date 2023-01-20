@@ -134,11 +134,11 @@ def _plot(a, b):
     import matplotlib
     matplotlib.use('Qt5Agg')
     import matplotlib.pyplot as plt
-    fig, ax, = plt.subplots(1, 2, sharex=True)
+    fig, ax, = plt.subplots(1, 2, sharex=True, sharey=True)
     mn = min(a.min(), b.min())
     mx = max(a.max(), b.max())
-    ax[0].imshow(a, vmin=mn, vmax=mx)
-    ax[1].imshow(b, vmin=mn, vmax=mx)
+    ax[0].imshow(a, vmin=mn, vmax=mx, interpolation='nearest', aspect='auto')
+    ax[1].imshow(b, vmin=mn, vmax=mx, interpolation='nearest', aspect='auto')
     plt.show()
 
 
