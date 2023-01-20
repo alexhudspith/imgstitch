@@ -142,6 +142,10 @@ def _plot(a, b):
     plt.show()
 
 
+def _allclose(a, b):
+    return np.allclose(a, b, atol=2.0)
+
+
 def _find_break_row(a: np.ndarray, b: np.ndarray, overlap: int, try_best_n: int = 4) -> int | None:
     """
     Find the earliest row of ``a`` at which ``b`` starts overlapping.
@@ -162,8 +166,8 @@ def _find_break_row(a: np.ndarray, b: np.ndarray, overlap: int, try_best_n: int 
     for i, c in enumerate(best_corr, 1):
         a_row = c - len(b_overlap) + 1 + a_offset
         b_row = a.shape[0] - a_row
-        logger.debug('- best #%d, a_row = %d, b_row = %d, correlation MSE: %f', i, a_row, b_row, corr_mse[c])
-        if a_row >= 0 and b_row < b.shape[0] and np.allclose(a[a_row:], b[:b_row]):
+        logger.debug('- best #%d, a_row = %d, b_row = %d, correlation MSE: %f', i, a_row, b_row, corr[c])
+        if a_row >= 0 and b_row < b.shape[0] and _allclose(a[a_row:], b[:b_row]):
             break
     else:
         a_row = None
