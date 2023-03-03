@@ -11,6 +11,9 @@ stitch together screenshots with overlapping regions that are near pixel-perfect
 
     imgstitch [-h] [-V] [-o FILE] [-v] [--crop-header-height HEIGHT] [--crop-first | --no-crop-first] [IMAGE ...]
 
+For any directory `IMAGE` argument, the contained images are used in order of filename. The output file path is excluded, if it
+would otherwise be matched. Subdirectories are not searched.
+
 ## Options
 
     -h, --help                     Print this help message and exit

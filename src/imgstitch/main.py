@@ -18,13 +18,14 @@ _PathLike = str | os.PathLike[str]
 
 logger = logging.getLogger(__name__)
 
+# Image suffixes considered when reading from directory
 _IMAGE_SUFFIXES = {'.png', '.gif', '.jpeg', '.jpg'}
 
 # os.startfile is only available on Windows
 # Used for option --show
-try:
+if hasattr(os, 'startfile'):
     _startfile = os.startfile
-except AttributeError:
+else:
     def _startfile(path):
         _cmd = 'xdg-open' if sys.platform.startswith('linux') else 'open'
         subprocess.Popen([_cmd, path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -57,14 +58,42 @@ def _save_image(image: Image, output_path: _PathLike | None) -> None:
         image.save(sys.stdout.buffer, 'png')
 
 
+def _find_images(paths: list[Path], exclude: Path | None = None) -> list[Path]:
+    result = []
+    for p in paths:
+        try:
+            file_paths = [
+                f for f in p.iterdir()
+                if f.suffix in _IMAGE_SUFFIXES and not _samefile(f, exclude)
+            ]
+            result.extend(sorted(file_paths))
+        except NotADirectoryError:
+            result.append(p)
+
+    return result
+
+
+def _samefile(path1: Path | None, path2: Path | None):
+    if path1 is None or path2 is None:
+        return False
+
+    try:
+        return path1.samefile(path2)
+    except FileNotFoundError:
+        return False
+
+
 def _path_or_stdout_arg(s: str) -> Path | None:
     return None if s == '-' else Path(s)
 
 
 def _parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser(fromfile_prefix_chars='@', add_help=False)
-    ap.add_argument('images', metavar='IMAGE', nargs=2, type=Path, help=argparse.SUPPRESS)
-    ap.add_argument('images2', metavar='IMAGE', nargs='*', type=Path, help='Two or more image files, top to bottom')
+    ap = argparse.ArgumentParser(fromfile_prefix_chars='@', add_help=False, epilog="""
+        For any directory IMAGE argument, the contained images are used in order of filename.
+        The output file path is excluded, if it would otherwise be matched. Subdirectories are not searched.
+        """)
+    ap.add_argument('images', metavar='IMAGE', nargs='+', type=Path,
+                    help='Image files and/or directories, ordered top to bottom')
     ap.add_argument('-h', '--help', action='help', help='Print this help message and exit')
     ap.add_argument('-V', '--version', action='version', version=__version__,
                     help='Print the version number and exit')
@@ -79,8 +108,10 @@ def _parse_args() -> argparse.Namespace:
                     help="Crop (default) or don't crop header from first image when using --crop-header-height")
 
     args = ap.parse_args()
-    args.images += args.images2
-    del args.images2
+    args.images = _find_images(args.images, args.output)
+    if len(args.images) < 2:
+        ap.error(f'At least two images are required but have {len(args.images)}')
+
     return args
 
 
