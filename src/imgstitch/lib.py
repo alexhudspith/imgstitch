@@ -119,16 +119,27 @@ def _check_images_compatible(images: Iterable[Image]) -> None:
         raise ImgStitchError(f'Images have different widths: {sorted(images_by_width.keys())}')
 
 
-def _plot(a, b):
+def _imshow(*arrays):
     import matplotlib
     matplotlib.use('Qt5Agg')
     import matplotlib.pyplot as plt
-    fig, ax, = plt.subplots(1, 2, sharex=True, sharey=True)
-    mn = min(a.min(), b.min())
-    mx = max(a.max(), b.max())
-    ax[0].imshow(a, vmin=mn, vmax=mx, interpolation='nearest', aspect='auto')
-    ax[1].imshow(b, vmin=mn, vmax=mx, interpolation='nearest', aspect='auto')
-    plt.show()
+    fig, ax, = plt.subplots(1, len(arrays), sharex=True)
+    if not hasattr(ax, '__len__'):
+        ax = [ax]
+    mn = min(a.min() for a in arrays)
+    mx = max(a.max() for a in arrays)
+    plt.ion()
+    for i, a in enumerate(arrays):
+        ax[i].imshow(a, vmin=mn, vmax=mx, interpolation='nearest', aspect='auto')
+
+
+def _plot(v):
+    import matplotlib
+    matplotlib.use('Qt5Agg')
+    import matplotlib.pyplot as plt
+    fig, ax, = plt.subplots(1, 1)
+    plt.ion()
+    ax.plot(v)
 
 
 def _allclose(a, b):
