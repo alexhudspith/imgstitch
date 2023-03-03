@@ -1,7 +1,7 @@
 import pytest
 from PIL import Image
 
-from imgstitch.main import ImgStitchError, stitch
+from imgstitch.lib import ImgStitchError, stitch
 
 
 def test_stitch_zero():

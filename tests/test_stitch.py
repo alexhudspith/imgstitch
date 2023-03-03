@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from PIL import Image
-from imgstitch.main import stitch
+from imgstitch.lib import stitch
 
 
 # Set up test arguments
