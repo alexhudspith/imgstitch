@@ -15,10 +15,11 @@ stitch together screenshots with overlapping regions that are near pixel-perfect
 
     -h, --help                     Print this help message and exit
     -V, --version                  Print the version number and exit
+    --show                         Show the output file using the default application
     -o FILE, --output FILE         Stitched output file, or '-' for standard output (default: out.png)
     -v, --verbose                  Print messages about progress
     --crop-header-height HEIGHT    Exclude first HEIGHT pixels from each image (default: 0)
-    --crop-first, --no-crop-first  Crop/don't crop header from first image when using --crop-header-height (default: True)
+    --crop-first, --no-crop-first  Crop (default) or don't crop header from first image when using --crop-header-height
 
 ## Known Limitations
 

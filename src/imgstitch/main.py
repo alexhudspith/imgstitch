@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import subprocess
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -16,6 +17,17 @@ from imgstitch import __version__, lib
 _PathLike = str | os.PathLike[str]
 
 logger = logging.getLogger(__name__)
+
+_IMAGE_SUFFIXES = {'.png', '.gif', '.jpeg', '.jpg'}
+
+# os.startfile is only available on Windows
+# Used for option --show
+try:
+    _startfile = os.startfile
+except AttributeError:
+    def _startfile(path):
+        _cmd = 'xdg-open' if sys.platform.startswith('linux') else 'open'
+        subprocess.Popen([_cmd, path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def _open_images(paths: Iterable[_PathLike]) -> list[Image]:
@@ -56,13 +68,16 @@ def _parse_args() -> argparse.Namespace:
     ap.add_argument('-h', '--help', action='help', help='Print this help message and exit')
     ap.add_argument('-V', '--version', action='version', version=__version__,
                     help='Print the version number and exit')
+    ap.add_argument('--show', action='store_true',
+                    help='Show the output file using the default application')
     ap.add_argument('-o', '--output', metavar='FILE', default='out.png', type=_path_or_stdout_arg,
                     help="Stitched output file, or '-' for standard output (default: %(default)s)")
     ap.add_argument('-v', '--verbose', action='count', default=0, help='Print messages about progress')
     ap.add_argument('--crop-header-height', metavar='HEIGHT', default=0, type=int,
                     help="Exclude first HEIGHT pixels from each image (default: %(default)s)")
     ap.add_argument('--crop-first', action=argparse.BooleanOptionalAction, default=True,
-                    help="Crop/don't crop header from first image when using --crop-header-height")
+                    help="Crop (default) or don't crop header from first image when using --crop-header-height")
+
     args = ap.parse_args()
     args.images += args.images2
     del args.images2
@@ -83,6 +98,8 @@ def main() -> None:
         images = _open_images(args.images)
         out = lib.stitch(*images, crop_header_height=args.crop_header_height, crop_first=args.crop_first)
         _save_image(out, args.output)
+        if args.show:
+            _startfile(args.output)
     except lib.ImgStitchError as e:
         logger.error('Error: %s', ', '.join(str(v) for v in e.args))
         sys.exit(e.exit_code)
