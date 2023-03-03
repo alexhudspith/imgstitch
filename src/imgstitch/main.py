@@ -58,6 +58,15 @@ def _save_image(image: Image, output_path: _PathLike | None) -> None:
         image.save(sys.stdout.buffer, 'png')
 
 
+def run(images, crop_header_height, crop_first, output, show):
+    # Image data is lazily loaded by Pillow
+    images = _open_images(images)
+    out = lib.stitch(*images, crop_header_height=crop_header_height, crop_first=crop_first)
+    _save_image(out, output)
+    if show:
+        _startfile(output)
+
+
 def _find_images(paths: list[Path], exclude: Path | None = None) -> list[Path]:
     result = []
     for p in paths:
@@ -125,12 +134,7 @@ def main() -> None:
     logging.captureWarnings(True)
 
     try:
-        # Image data is lazily loaded by Pillow
-        images = _open_images(args.images)
-        out = lib.stitch(*images, crop_header_height=args.crop_header_height, crop_first=args.crop_first)
-        _save_image(out, args.output)
-        if args.show:
-            _startfile(args.output)
+        run(args.images, args.crop_header_height, args.crop_first, args.output, args.show)
     except lib.ImgStitchError as e:
         logger.error('Error: %s', ', '.join(str(v) for v in e.args))
         sys.exit(e.exit_code)
