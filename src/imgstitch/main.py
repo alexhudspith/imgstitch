@@ -128,7 +128,7 @@ def main() -> None:
     args = _parse_args()
 
     log_levels = [logging.WARNING, logging.INFO, logging.DEBUG]
-    log_level = log_levels[min(args.verbose, len(log_levels))]
+    log_level = log_levels[min(args.verbose, len(log_levels) - 1)]
     # logging.basicConfig(level=log_level, format='%(message)s')
     logging.basicConfig(level=log_level, format='%(asctime)s %(message)s')
     logging.captureWarnings(True)
